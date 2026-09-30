@@ -39,3 +39,7 @@ vgs:                                # Define multipe VGs for mounting
     mounts:
       lv_vol4: "/backup/vol4"
       lv_vol5: "/backup/vol5"
+
+ignore_vgs:                         # Optional: Volume groups that are attached to the proxy but should be ignored
+  - "NutanixVG1"                    # and not deleted/detached.  Useful if your proxy host is used for other
+  - "NutanixVG2"                    # non-prod environments on VGs.  This should match the Nutanix VG name

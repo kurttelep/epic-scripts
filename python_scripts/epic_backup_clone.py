@@ -31,7 +31,7 @@ def load_config(config_file):
     global PC_IP, USERNAME, PASSWORD, RECOVERY_POINT_RETENTION_DAYS, COPY_TYPE
     global SOURCE_ENV, TARGET_ENV, SOURCE_VM_NAME, SOURCE_HOST, SOURCE_USER
     global FREEZE_COMMAND, THAW_COMMAND, TARGET_VM_NAME, TARGET_HOST, TARGET_USER, VGS
-    global LVM_BYPASS, DB_FROZEN, RP_API_URL, VG_API_URL, VM_API_URL, DELETE_VG
+    global LVM_BYPASS, DB_FROZEN, RP_API_URL, VG_API_URL, VM_API_URL, DELETE_VG, IGNORE_VGS
 
     # Load the configuration file
     try:
@@ -75,10 +75,12 @@ def load_config(config_file):
 
         # VG and LV configurations
         VGS = config['vgs']
+        IGNORE_VGS = config.get('ignore_vgs',[])
 
         if (not TARGET_ENV) and (COPY_TYPE == "REFRESH"):
             print(f"[CRIT] TARGET_ENV must be defined in config file if COPY_TYPE is REFRESH")
             sys.exit(1)
+
 
     except KeyError as e:
         print(f"[CRIT] missing parameter in configuration file: {e}")
@@ -479,6 +481,7 @@ def clone_and_attach_vgs():
 def detach_and_delete_vgs(delete_vg=False):
     # This function detaches any VGs currently attached to the mount host, and 
     # optionally deletes them, cleaning up and preparing for the refresh mount
+    # this ignores any VGs named in the 'ignorevgs' list
 
     # Get the Proxy VM's UUID, we'll need it later for unmounting
     proxy_vm_uuid = get_vm_uuid(TARGET_VM_NAME)
@@ -488,6 +491,10 @@ def detach_and_delete_vgs(delete_vg=False):
     for vg_id in attached_vgids:
         vg_details = get_vgid_details(vg_id)
         vg_name = vg_details['data'][0]['name']
+        if vg_name in IGNORE_VGS:
+            logger.info(f"Skipping Volume Group {vg_name} as it is in the ignore list")
+            continue
+
         logger.info(f"Detaching Volume Group {vg_name} from Proxy VM {TARGET_VM_NAME}")
         try:
             detach_vg_from_vm(vg_id,proxy_vm_uuid)

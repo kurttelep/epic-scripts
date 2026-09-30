@@ -49,7 +49,7 @@ target:
   host: "<IP of Target VM>"         # Hostname or IP of Target VM
   user: "<SSH Username>"            # SSH user with ssh keys configured for authentication
 
-vgs:                                # Define multipe VGs for mounting
+vgs:                                # Define multiple VGs for mounting
   - ntnx_source_vg: "EPICVG"        # VG Name in Prism Central (Case Sensitive)
     source_lvm_vg: "EpicVG"         # VG Name as seen by LVM within the source
     target_lvm_vg: "EpicSUP"        # VG Name that you want LVM to use on target 
@@ -64,6 +64,10 @@ vgs:                                # Define multipe VGs for mounting
     mounts:
       lv_vol4: "/backup/vol4"
       lv_vol5: "/backup/vol5"
+
+ignore_vgs:                         # Volume groups that are attached to the proxy but should be ignored
+  - "NutanixVG1"                    # and not deleted/detached.  Useful if your SUP host is used for other
+  - "NutanixVG2"                    # non-prod environments.  This should match the Nutanix VG name
 ```
 
 ## Usage
@@ -410,3 +414,4 @@ Neither object is dependent upon the other, so the Recovery Point can be removed
 | Date       | Author        | Description           |
 |------------|---------------|-----------------------|
 | 2026-07-13 | Kurt Telep    | Initial documentation |
+| 2026-09-29 | Kurt Telep    | Updated to include Ignore VGs parameters |
